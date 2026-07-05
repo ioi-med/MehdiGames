@@ -112,16 +112,17 @@ const InputManager = {
                     if (e.cancelable) e.preventDefault();
 
                     if (id === 'btnConfirm' && typeof Game !== 'undefined' && typeof UIManager !== 'undefined' && Game.state === UIManager.STATE.MENU) {
-                        if (UIManager.transitionState !== 0 || Game._prompting) return;
-                        Game._prompting = true;
-                        let name = window.prompt("Entrez votre nom (10 lettres max) :", UIManager.playerNameInput);
-                        Game._prompting = false;
-                        
-                        if (name !== null && name.trim().length > 0) {
-                            UIManager.playerNameInput = name.trim().toUpperCase().substring(0, 10).replace(/[^A-Z0-9 ]/g, '');
-                            Game.mobileNameEntered = true;
-                        } else {
-                            return;
+                        if (UIManager.transitionState === 0 && !Game._prompting && !Game.mobileNameEntered) {
+                            Game._prompting = true;
+                            let name = window.prompt("Entrez votre nom (10 lettres max) :", UIManager.playerNameInput);
+                            Game._prompting = false;
+                            
+                            if (name !== null && name.trim().length > 0) {
+                                UIManager.playerNameInput = name.trim().toUpperCase().substring(0, 10).replace(/[^A-Z0-9 ]/g, '');
+                                Game.mobileNameEntered = true;
+                            } else {
+                                return;
+                            }
                         }
                     }
 
