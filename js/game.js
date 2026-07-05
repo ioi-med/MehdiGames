@@ -48,6 +48,10 @@ const Game = {
 
         // Gestion de la fenêtre
         window.addEventListener('resize', () => this.resize());
+        // Aussi écouter orientationchange pour mobile
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => this.resize(), 200);
+        });
         this.resize();
 
         // Initialisation des modules
@@ -61,6 +65,29 @@ const Game = {
         // Initialisation de la sauvegarde HTML
         this.initSaveLoadUI();
 
+        // Sur mobile, tenter le fullscreen au premier tap
+        if (InputManager.isMobile) {
+            const requestFS = () => {
+                const el = document.documentElement;
+                if (el.requestFullscreen) el.requestFullscreen().catch(() => { });
+                else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+                document.removeEventListener('touchstart', requestFS);
+            };
+            document.addEventListener('touchstart', requestFS, { once: true });
+        }
+
+        // Configurer l'input mobile pour la saisie du nom
+        this.mobileInput = document.getElementById('mobileNameInput');
+        if (this.mobileInput) {
+            this.mobileInput.addEventListener('input', (e) => {
+                // Synchroniser le contenu de l'input HTML vers le jeu
+                let val = this.mobileInput.value.toUpperCase().replace(/[^A-Z0-9 ]/g, '');
+                if (val.length > 10) val = val.substring(0, 10);
+                this.mobileInput.value = val;
+                UIManager.playerNameInput = val;
+            });
+        }
+
         // Générer les spritesheets (désormais asynchrone car charge des images depuis le disque)
         setTimeout(() => {
             SpriteManager.init().then(() => {
@@ -70,7 +97,7 @@ const Game = {
                     loadingDOM.style.opacity = '0';
                     setTimeout(() => loadingDOM.style.display = 'none', 500);
                 }
-                
+
                 this.state = UIManager.STATE.MENU;
                 document.body.classList.add('game-active');
             });
@@ -81,12 +108,23 @@ const Game = {
      * Ajuster le canvas à l'écran (tout en gardant le ratio et les pixels nets)
      */
     resize() {
-        const scale = Math.min(window.innerWidth / this.WIDTH, window.innerHeight / this.HEIGHT);
-        // On arrondit l'échelle pour éviter le sub-pixel rendering (qui floute le pixel art)
-        const intScale = Math.max(1, Math.floor(scale));
-        
-        this.canvas.style.width = `${this.WIDTH * intScale}px`;
-        this.canvas.style.height = `${this.HEIGHT * intScale}px`;
+        const ww = window.innerWidth;
+        const wh = window.innerHeight;
+        const scaleX = ww / this.WIDTH;
+        const scaleY = wh / this.HEIGHT;
+        const scale = Math.min(scaleX, scaleY);
+
+        // Sur mobile, utiliser l'échelle fractionnaire pour maximiser l'espace
+        // Sur PC, arrondir vers le bas pour garder les pixels nets
+        let finalScale;
+        if (InputManager.isMobile) {
+            finalScale = Math.max(0.5, scale);
+        } else {
+            finalScale = Math.max(1, Math.floor(scale));
+        }
+
+        this.canvas.style.width = `${Math.floor(this.WIDTH * finalScale)}px`;
+        this.canvas.style.height = `${Math.floor(this.HEIGHT * finalScale)}px`;
     },
 
     // =====================================================================
@@ -173,7 +211,7 @@ const Game = {
             btnExport.onclick = () => {
                 const save = localStorage.getItem('mehdigames_save');
                 if (!save) return alert('Aucune sauvegarde locale trouvée pour le moment !');
-                const blob = new Blob([save], {type: "application/json"});
+                const blob = new Blob([save], { type: "application/json" });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
@@ -201,7 +239,7 @@ const Game = {
                         } else {
                             alert('Fichier de sauvegarde invalide.');
                         }
-                    } catch(err) {
+                    } catch (err) {
                         alert('Erreur: Fichier JSON illisible.');
                     }
                 };
@@ -232,14 +270,14 @@ const Game = {
      */
     loadLevel(levelNum) {
         this.levelData = LevelManager.generate(levelNum);
-        
+
         // Positionner le joueur
         this.player.x = this.levelData.playerStart.x;
         this.player.y = this.levelData.playerStart.y;
         this.player.vx = 0;
         this.player.vy = 0;
         this.player.onGround = false;
-        
+
         // Créer les entités ennemis
         this.levelData.entities = this.levelData.enemies.map(e => new Enemy(e));
         if (this.levelData.bossData) {
@@ -249,10 +287,10 @@ const Game = {
         // Vider les particules
         this.particles = [];
         this.bossPotionTimer = 0; // Timer pour le spawn de potions pendant les boss
-        
+
         // Caméra initiale
         this.updateCamera(0, true);
-        
+
         this.saveGame();
     },
 
@@ -271,7 +309,7 @@ const Game = {
 
     update(dt) {
         this.frameCount++;
-        
+
         switch (this.state) {
             case UIManager.STATE.MENU:
                 if (InputManager.confirm) {
@@ -284,9 +322,23 @@ const Game = {
                 break;
 
             case UIManager.STATE.NAME_INPUT:
-                // Saisie du nom très basique
-                window.addEventListener('keydown', this.nameInputHandler);
+                // Sur mobile : ouvrir le clavier virtuel via l'input HTML caché
+                if (InputManager.isMobile && this.mobileInput) {
+                    // Synchroniser l'input HTML avec la valeur actuelle
+                    if (document.activeElement !== this.mobileInput) {
+                        this.mobileInput.value = UIManager.playerNameInput;
+                        this.mobileInput.focus();
+                        this.mobileInput.click();
+                    }
+                } else {
+                    // Sur PC : saisie clavier classique
+                    window.addEventListener('keydown', this.nameInputHandler);
+                }
                 if (InputManager.confirm && UIManager.playerNameInput.trim().length > 0) {
+                    // Fermer le clavier mobile
+                    if (InputManager.isMobile && this.mobileInput) {
+                        this.mobileInput.blur();
+                    }
                     window.removeEventListener('keydown', this.nameInputHandler);
                     AudioManager.sfxMenuSelect();
                     UIManager.startTransition(() => {
@@ -306,7 +358,7 @@ const Game = {
                 } else {
                     this.canChangeMode = true;
                 }
-                
+
                 if (InputManager.confirm) {
                     AudioManager.sfxMenuSelect();
                     this.creativeMode = (UIManager.menuSelection === 1);
@@ -351,7 +403,7 @@ const Game = {
                 this.player.updateAnimation(dt);
                 this.player.x += this.player.vx * dt;
                 this.updateCamera(dt, false);
-                
+
                 if (this.stateTimer <= 0) {
                     UIManager.startTransition(() => {
                         this.levelNum++;
@@ -364,7 +416,7 @@ const Game = {
                     });
                 }
                 break;
-                
+
             case UIManager.STATE.GAME_CLEAR:
                 // Attente sur l'écran de victoire
                 if (InputManager.confirm) {
@@ -382,7 +434,7 @@ const Game = {
     updatePlaying(dt) {
         // --- Fin de jeu (Joueur mort) ---
         this.player.update(dt, this.levelData);
-        
+
         // Vérifier mort du joueur
         if (this.player.isDead && this.player.deathTimer > 2.0 && this.state !== UIManager.STATE.GAME_OVER) {
             this.state = UIManager.STATE.GAME_OVER;
@@ -412,10 +464,10 @@ const Game = {
                 this.spawnEffect(px, py, 'sparkle', 3);
             }
         }
-        
+
         for (let i = this.levelData.entities.length - 1; i >= 0; i--) {
             const ent = this.levelData.entities[i];
-            
+
             // Les boss gèrent leur apparition
             if (ent instanceof Boss) {
                 bossAlive = !ent.isDead;
@@ -425,7 +477,7 @@ const Game = {
             }
 
             const keepAlive = ent.update(dt, this.levelData, this.player);
-            
+
             // Collisions Entité -> Joueur (dégâts)
             if (!ent.isDead && !this.player.isDead && this.player.invincible <= 0) {
                 if (ent.collidesWith(this.player)) {
@@ -441,11 +493,11 @@ const Game = {
                     }
                 }
             }
-            
+
             // Retirer l'entité si morte et animation terminée
             if (!keepAlive) {
                 this.levelData.entities.splice(i, 1);
-                this.spawnEffect(ent.x + ent.w/2, ent.y + ent.h/2, 'smoke', 4);
+                this.spawnEffect(ent.x + ent.w / 2, ent.y + ent.h / 2, 'smoke', 4);
                 this.player.score += (ent instanceof Boss ? 1000 : 50);
             }
         }
@@ -458,7 +510,7 @@ const Game = {
                     // Touché !
                     const knockDir = this.player.facingRight ? 1 : -1;
                     const killed = ent.takeDamage(this.player.attackDamage, knockDir);
-                    this.spawnEffect(ent.x + ent.w/2, ent.y + ent.h/2, 'impact', 3);
+                    this.spawnEffect(ent.x + ent.w / 2, ent.y + ent.h / 2, 'impact', 3);
                 }
             }
         }
@@ -469,15 +521,15 @@ const Game = {
             const itemSize = 32; // Taille agrandie x2
             const ix = item.x - 8; // Centrage
             const iy = item.y - 16;
-            
+
             if (this.player.x < ix + itemSize && this.player.x + this.player.w > ix &&
                 this.player.y < iy + itemSize && this.player.y + this.player.h > iy) {
-                
+
                 // Ramassé
                 this.levelData.collectibles.splice(i, 1);
                 this.spawnEffect(item.x + 8, item.y + 8, 'sparkle', 3);
                 AudioManager.sfxCollect();
-                
+
                 if (item.type === 'coin') {
                     this.player.coins++;
                     this.player.score += 10;
@@ -534,7 +586,7 @@ const Game = {
 
         // Cible la position du joueur (centrée)
         this.targetCameraX = this.player.x - this.WIDTH / 2;
-        
+
         // Sur les niveaux boss, la caméra est fixe
         if (this.levelData.isBoss) {
             this.targetCameraX = 0;
@@ -547,7 +599,7 @@ const Game = {
                 // Interpolation douce
                 this.cameraX += (this.targetCameraX - this.cameraX) * 5 * dt;
             }
-            
+
             // Caméra Y fixe (alignée en bas)
             this.cameraY = this.levelData.pixelHeight - this.HEIGHT;
         }
@@ -557,7 +609,7 @@ const Game = {
         if (this.cameraX > this.levelData.pixelWidth - this.WIDTH) {
             this.cameraX = this.levelData.pixelWidth - this.WIDTH;
         }
-        
+
         // Arrondir pour éviter le sub-pixel rendering (qui floute)
         this.cameraX = Math.floor(this.cameraX);
         this.cameraY = Math.floor(this.cameraY);
@@ -574,6 +626,25 @@ const Game = {
             saveMenu.style.display = (this.state === UIManager.STATE.PAUSED && UIManager.transitionState === 0) ? 'flex' : 'none';
         }
 
+        // Gérer l'affichage des contrôles tactiles selon l'état
+        if (InputManager.isMobile) {
+            const touchControls = document.getElementById('touchControls');
+            const touchMenu = document.getElementById('touchMenuControls');
+
+            if (touchControls && touchMenu) {
+                const isPlaying = (this.state === UIManager.STATE.PLAYING);
+                const isMenu = (this.state === UIManager.STATE.MENU ||
+                    this.state === UIManager.STATE.NAME_INPUT ||
+                    this.state === UIManager.STATE.MODE_SELECT ||
+                    this.state === UIManager.STATE.GAME_OVER ||
+                    this.state === UIManager.STATE.PAUSED ||
+                    this.state === UIManager.STATE.GAME_CLEAR);
+
+                touchControls.style.display = isPlaying ? 'flex' : 'none';
+                touchMenu.style.display = isMenu ? 'flex' : 'none';
+            }
+        }
+
         // Effacer
         this.ctx.fillStyle = '#0a0a12';
         this.ctx.fillRect(0, 0, this.WIDTH, this.HEIGHT);
@@ -582,7 +653,7 @@ const Game = {
             // 1. Fond (parallax léger si on veut)
             // 2. Tuiles
             LevelManager.render(this.ctx, this.levelData, this.cameraX, this.cameraY, this.frameCount);
-            
+
             // 3. Collectibles
             const uiSprites = SpriteManager.sprites.ui;
             for (const item of this.levelData.collectibles) {

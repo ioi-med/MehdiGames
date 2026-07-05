@@ -124,7 +124,8 @@ const UIManager = {
 
         // Press Start (clignotant)
         if (this.cursorVisible) {
-            this.drawText(ctx, "APPUYEZ SUR ENTRÉE", cw / 2, ch / 2 + 30, 10, '#ffffff');
+            const startText = InputManager.isMobile ? "APPUYEZ POUR JOUER" : "APPUYEZ SUR ENTRÉE";
+            this.drawText(ctx, startText, cw / 2, ch / 2 + 30, 10, '#ffffff');
         }
     },
 
@@ -153,7 +154,12 @@ const UIManager = {
         this.drawText(ctx, displayText, cw / 2, boxY + boxH / 2, 12, '#ffffff');
 
         this.drawText(ctx, "(Max 10 lettres)", cw / 2, ch / 2 + 40, 8, '#8080a0');
-        this.drawText(ctx, "Entrée pour valider", cw / 2, ch / 2 + 60, 8, '#606080');
+
+        if (InputManager.isMobile) {
+            this.drawText(ctx, "Tapez puis appuyez OK", cw / 2, ch / 2 + 60, 8, '#606080');
+        } else {
+            this.drawText(ctx, "Entrée pour valider", cw / 2, ch / 2 + 60, 8, '#606080');
+        }
     },
 
     /**
@@ -173,8 +179,13 @@ const UIManager = {
         const colorCreatif = (this.menuSelection === 1) ? '#ffffff' : '#606080';
         this.drawText(ctx, (this.menuSelection === 1 ? "> " : "") + "2. CREATIF (Invincible)", cw / 2, ch / 2 + 20, 10, colorCreatif);
 
-        this.drawText(ctx, "Haut/Bas pour choisir", cw / 2, ch / 2 + 50, 8, '#404060');
-        this.drawText(ctx, "Entrée pour valider", cw / 2, ch / 2 + 65, 8, '#606080');
+        if (InputManager.isMobile) {
+            this.drawText(ctx, "Haut/Bas pour choisir", cw / 2, ch / 2 + 50, 8, '#404060');
+            this.drawText(ctx, "OK pour valider", cw / 2, ch / 2 + 65, 8, '#606080');
+        } else {
+            this.drawText(ctx, "Haut/Bas pour choisir", cw / 2, ch / 2 + 50, 8, '#404060');
+            this.drawText(ctx, "Entrée pour valider", cw / 2, ch / 2 + 65, 8, '#606080');
+        }
     },
 
     /**
@@ -222,7 +233,8 @@ const UIManager = {
         ctx.fillRect(0, 0, cw, ch);
 
         this.drawText(ctx, "PAUSE", cw / 2, ch / 2 - 20, 20, '#ffffff');
-        this.drawText(ctx, "Appuyez sur ÉCHAP pour reprendre", cw / 2, ch / 2 + 20, 8, '#a0a0c0');
+        const resumeText = InputManager.isMobile ? "Appuyez sur ⏸ pour reprendre" : "Appuyez sur ÉCHAP pour reprendre";
+        this.drawText(ctx, resumeText, cw / 2, ch / 2 + 20, 8, '#a0a0c0');
     },
 
     /**
@@ -237,7 +249,8 @@ const UIManager = {
         this.drawText(ctx, `Score final : ${score}`, cw / 2, ch / 2 + 25, 10, '#f0c040');
 
         if (this.cursorVisible) {
-            this.drawText(ctx, "Appuyez sur ENTRÉE pour réessayer", cw / 2, ch / 2 + 60, 8, '#ffffff');
+            const retryText = InputManager.isMobile ? "Appuyez sur OK pour réessayer" : "Appuyez sur ENTRÉE pour réessayer";
+            this.drawText(ctx, retryText, cw / 2, ch / 2 + 60, 8, '#ffffff');
         }
 
         this.drawText(ctx, "Créé par MehdiLabs", cw / 2, ch - 20, 8, '#606080');

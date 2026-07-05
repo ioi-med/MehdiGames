@@ -16,10 +16,17 @@ const InputManager = {
     gpJustPressed: {},
     gpAxesThreshold: 0.5,
 
+    // Détection mobile
+    isMobile: false,
+
     /**
      * Initialiser les écouteurs clavier
      */
     init() {
+        // Détecter si on est sur mobile/tablette
+        this.isMobile = ('ontouchstart' in window || navigator.maxTouchPoints > 0)
+            && (window.innerWidth < 900 || /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
+
         window.addEventListener('keydown', (e) => {
             // Marquer comme "just pressed" seulement au premier appui
             if (!this.keys[e.code]) {
@@ -52,7 +59,7 @@ const InputManager = {
         // ==========================================
         // Contrôles tactiles (Mobile)
         // ==========================================
-        if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+        if (this.isMobile) {
             const touchControls = document.getElementById('touchControls');
             if (touchControls) {
                 touchControls.style.display = 'flex';
@@ -93,8 +100,51 @@ const InputManager = {
                 bindTouch('btnAttack', 'Space');
                 bindTouch('btnJump', 'ArrowUp');
             }
+
+            // ==========================================
+            // Boutons tactiles de menu (Confirmer / Pause)
+            // ==========================================
+            const bindMenuTouch = (id, codes) => {
+                const btn = document.getElementById(id);
+                if (!btn) return;
+
+                btn.addEventListener('touchstart', (e) => {
+                    if (e.cancelable) e.preventDefault();
+                    for (const code of codes) {
+                        if (!this.keys[code]) this.justPressed[code] = true;
+                        this.keys[code] = true;
+                    }
+                }, {passive: false});
+
+                btn.addEventListener('touchend', (e) => {
+                    if (e.cancelable) e.preventDefault();
+                    for (const code of codes) {
+                        this.keys[code] = false;
+                        this.justReleased[code] = true;
+                    }
+                }, {passive: false});
+
+                btn.addEventListener('touchcancel', (e) => {
+                    if (e.cancelable) e.preventDefault();
+                    for (const code of codes) {
+                        this.keys[code] = false;
+                        this.justReleased[code] = true;
+                    }
+                }, {passive: false});
+            };
+
+            bindMenuTouch('btnConfirm', ['Enter', 'Space']);
+            bindMenuTouch('btnPause', ['Escape']);
         }
+
+        // Empêcher les comportements par défaut du navigateur mobile (scroll, zoom, etc.)
+        document.addEventListener('touchmove', (e) => {
+            if (e.target.tagName !== 'INPUT') {
+                e.preventDefault();
+            }
+        }, {passive: false});
     },
+
 
     /**
      * Vérifier si une touche est enfoncée

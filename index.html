@@ -2,12 +2,29 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MehdiGames - Action Platformer 2D</title>
     
     <!-- Meta tags pour SEO -->
     <meta name="description" content="Jouez à MehdiGames, un jeu d'action et plateforme 2D rétro en pixel art pur avec 100 niveaux et 10 boss. Jouable gratuitement dans votre navigateur. Créé par MehdiLabs.">
     <meta name="keywords" content="jeu, pixel art, 2d, plateforme, action, html5, canvas, javascript, rétro, MehdiLabs">
+    
+    <!-- iOS — Icône écran d'accueil + partage -->
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- iOS — Web App (plein écran, pas de barre Safari) -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MehdiGames">
+    <meta name="theme-color" content="#0a0a12">
+    
+    <!-- Open Graph — Aperçu lors du partage (iMessage, WhatsApp, etc.) -->
+    <meta property="og:title" content="MehdiGames - Le Retour de Stalum">
+    <meta property="og:description" content="Jeu d'action et plateforme 2D rétro en pixel art pur avec 100 niveaux et 10 boss. Jouable gratuitement dans votre navigateur.">
+    <meta property="og:image" content="icon-512.png">
+    <meta property="og:type" content="website">
     
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -26,6 +43,17 @@
         <input type="file" id="fileInput" accept=".json" style="display: none;">
     </div>
 
+    <!-- Overlay "Tournez votre écran" pour mobile en mode portrait -->
+    <div id="rotateOverlay" class="rotate-overlay">
+        <div class="rotate-content">
+            <div class="rotate-icon">📱↻</div>
+            <p>Tournez votre écran<br>en mode paysage</p>
+        </div>
+    </div>
+
+    <!-- Input HTML caché pour le clavier virtuel sur mobile -->
+    <input type="text" id="mobileNameInput" class="mobile-name-input" maxlength="10" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" />
+
     <!-- Le jeu -->
     <canvas id="gameCanvas"></canvas>
 
@@ -39,6 +67,12 @@
             <button id="btnAttack" class="touch-btn">⚔</button>
             <button id="btnJump" class="touch-btn">▲</button>
         </div>
+    </div>
+
+    <!-- Boutons tactiles pour les menus (Confirmer / Pause) -->
+    <div id="touchMenuControls" class="touch-menu-controls" style="display: none;">
+        <button id="btnConfirm" class="touch-menu-btn confirm-btn">✓ OK</button>
+        <button id="btnPause" class="touch-menu-btn pause-btn">⏸</button>
     </div>
 
     <!-- Scripts (ordre critique sans dépendances) -->
