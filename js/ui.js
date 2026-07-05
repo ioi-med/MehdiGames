@@ -209,7 +209,7 @@ const UIManager = {
         this.drawText(ctx, (this.menuSelection === 1 ? "> " : "") + "2. CREATIF (Invincible)", cw / 2, ch / 2 + 20, 10, colorCreatif);
 
         if (InputManager.isMobile) {
-            this.drawText(ctx, "Haut/Bas pour choisir", cw / 2, ch / 2 + 50, 8, '#404060');
+            this.drawText(ctx, "Touchez l'écran pour changer", cw / 2, ch / 2 + 50, 8, '#404060');
             this.drawText(ctx, "OK pour valider", cw / 2, ch / 2 + 65, 8, '#606080');
         } else {
             this.drawText(ctx, "Haut/Bas pour choisir", cw / 2, ch / 2 + 50, 8, '#404060');

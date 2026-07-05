@@ -151,6 +151,25 @@ const InputManager = {
 
             bindMenuTouch('btnConfirm', ['Enter', 'Space']);
             bindMenuTouch('btnPause', ['Escape']);
+
+            // Changement de mode en touchant n'importe où sur l'écran
+            const canvas = document.getElementById('gameCanvas');
+            if (canvas) {
+                canvas.addEventListener('touchstart', (e) => {
+                    if (typeof Game !== 'undefined' && typeof UIManager !== 'undefined' && Game.state === UIManager.STATE.MODE_SELECT) {
+                        e.preventDefault();
+                        if (!this.keys['ArrowUp']) this.justPressed['ArrowUp'] = true;
+                        this.keys['ArrowUp'] = true;
+                    }
+                }, {passive: false});
+                canvas.addEventListener('touchend', (e) => {
+                    if (typeof Game !== 'undefined' && typeof UIManager !== 'undefined' && Game.state === UIManager.STATE.MODE_SELECT) {
+                        e.preventDefault();
+                        this.keys['ArrowUp'] = false;
+                        this.justReleased['ArrowUp'] = true;
+                    }
+                }, {passive: false});
+            }
         }
 
         // Empêcher les comportements par défaut du navigateur mobile (scroll, zoom, etc.)
