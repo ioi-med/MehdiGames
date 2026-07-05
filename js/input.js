@@ -122,6 +122,14 @@ const InputManager = {
                         this.keys[code] = false;
                         this.justReleased[code] = true;
                     }
+
+                    if (id === 'btnConfirm') {
+                        const mobileInput = document.getElementById('mobileNameInput');
+                        if (mobileInput && typeof Game !== 'undefined' && typeof UIManager !== 'undefined' && Game.state === UIManager.STATE.MENU) {
+                            mobileInput.focus();
+                            mobileInput.click();
+                        }
+                    }
                 }, {passive: false});
 
                 btn.addEventListener('touchcancel', (e) => {
