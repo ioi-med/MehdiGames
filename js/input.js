@@ -110,6 +110,17 @@ const InputManager = {
 
                 btn.addEventListener('touchstart', (e) => {
                     if (e.cancelable) e.preventDefault();
+
+                    if (id === 'btnConfirm' && typeof Game !== 'undefined' && typeof UIManager !== 'undefined' && Game.state === UIManager.STATE.MENU) {
+                        let name = window.prompt("Entrez votre nom (10 lettres max) :", UIManager.playerNameInput);
+                        if (name !== null && name.trim().length > 0) {
+                            UIManager.playerNameInput = name.trim().toUpperCase().substring(0, 10).replace(/[^A-Z0-9 ]/g, '');
+                            Game.mobileNameEntered = true;
+                        } else {
+                            return;
+                        }
+                    }
+
                     for (const code of codes) {
                         if (!this.keys[code]) this.justPressed[code] = true;
                         this.keys[code] = true;
@@ -121,14 +132,6 @@ const InputManager = {
                     for (const code of codes) {
                         this.keys[code] = false;
                         this.justReleased[code] = true;
-                    }
-
-                    if (id === 'btnConfirm') {
-                        const mobileInput = document.getElementById('mobileNameInput');
-                        if (mobileInput && typeof Game !== 'undefined' && typeof UIManager !== 'undefined' && Game.state === UIManager.STATE.MENU) {
-                            mobileInput.focus();
-                            mobileInput.click();
-                        }
                     }
                 }, {passive: false});
 

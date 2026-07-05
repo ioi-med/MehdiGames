@@ -316,30 +316,30 @@ const Game = {
                     AudioManager.init(); // Important : initialiser l'audio au premier clic
                     AudioManager.sfxMenuSelect();
                     UIManager.startTransition(() => {
-                        this.state = UIManager.STATE.NAME_INPUT;
+                        if (InputManager.isMobile && Game.mobileNameEntered) {
+                            this.state = UIManager.STATE.STORY;
+                        } else {
+                            this.state = UIManager.STATE.NAME_INPUT;
+                        }
                     });
                 }
                 break;
 
             case UIManager.STATE.NAME_INPUT:
-                // Sur mobile : ouvrir le clavier virtuel via l'input HTML caché
-                if (InputManager.isMobile && this.mobileInput) {
-                    // Synchroniser l'input HTML avec la valeur actuelle
-                    if (document.activeElement !== this.mobileInput) {
-                        this.mobileInput.value = UIManager.playerNameInput;
-                        this.mobileInput.focus();
-                        this.mobileInput.click();
-                    }
-                } else {
-                    // Sur PC : saisie clavier classique
+                if (!InputManager.isMobile) {
                     window.addEventListener('keydown', this.nameInputHandler);
                 }
                 if (InputManager.confirm && UIManager.playerNameInput.trim().length > 0) {
-                    // Fermer le clavier mobile
-                    if (InputManager.isMobile && this.mobileInput) {
-                        this.mobileInput.blur();
-                    }
                     window.removeEventListener('keydown', this.nameInputHandler);
+                    AudioManager.sfxMenuSelect();
+                    UIManager.startTransition(() => {
+                        this.state = UIManager.STATE.STORY;
+                    });
+                }
+                break;
+
+            case UIManager.STATE.STORY:
+                if (InputManager.confirm) {
                     AudioManager.sfxMenuSelect();
                     UIManager.startTransition(() => {
                         this.state = UIManager.STATE.MODE_SELECT;
@@ -699,6 +699,9 @@ const Game = {
                 break;
             case UIManager.STATE.NAME_INPUT:
                 UIManager.renderNameInput(this.ctx, this.canvas.width, this.canvas.height);
+                break;
+            case UIManager.STATE.STORY:
+                UIManager.renderStory(this.ctx, this.canvas.width, this.canvas.height);
                 break;
             case UIManager.STATE.MODE_SELECT:
                 UIManager.renderModeSelect(this.ctx, this.canvas.width, this.canvas.height);

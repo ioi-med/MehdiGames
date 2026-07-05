@@ -14,7 +14,8 @@ const UIManager = {
         GAME_OVER: 5,
         LEVEL_CLEAR: 6,
         GAME_CLEAR: 7,
-        MODE_SELECT: 8
+        MODE_SELECT: 8,
+        STORY: 9
     },
 
     // Variables UI
@@ -159,6 +160,34 @@ const UIManager = {
             this.drawText(ctx, "Tapez puis appuyez OK", cw / 2, ch / 2 + 60, 8, '#606080');
         } else {
             this.drawText(ctx, "Entrée pour valider", cw / 2, ch / 2 + 60, 8, '#606080');
+        }
+    },
+
+    /**
+     * Rendu de l'écran d'histoire
+     */
+    renderStory(ctx, cw, ch) {
+        ctx.fillStyle = '#0a0a12';
+        ctx.fillRect(0, 0, cw, ch);
+
+        this.drawText(ctx, "HISTOIRE", cw / 2, ch / 2 - 60, 16, '#f0c040');
+
+        const lines = [
+            "Le Roi Démon a instauré le",
+            "Communisme dans le royaume",
+            "de Stalum.",
+            "",
+            "Le Dieu du Capitalisme nous",
+            "demande de libérer le royaume!"
+        ];
+
+        for (let i = 0; i < lines.length; i++) {
+            this.drawText(ctx, lines[i], cw / 2, ch / 2 - 20 + i * 15, 8, '#ffffff');
+        }
+
+        if (this.cursorVisible) {
+            const btn = InputManager.isMobile ? "OK" : "ENTRÉE";
+            this.drawText(ctx, "APPUYEZ SUR " + btn, cw / 2, ch / 2 + 70, 8, '#f0c040');
         }
     },
 
