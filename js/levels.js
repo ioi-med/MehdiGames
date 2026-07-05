@@ -75,7 +75,7 @@ const LevelManager = {
             id: SpriteManager.getBossId(levelNum),
             x: (width / 2) * this.TILE_SIZE,
             y: (height - 6) * this.TILE_SIZE,
-            hp: 10 + levelNum * 2,
+            hp: 5 + levelNum,
         } : null;
 
         // Placer les collectibles
@@ -316,7 +316,7 @@ const LevelManager = {
     placeCollectibles(grid, w, h, rng, difficulty) {
         const items = [];
         const numCoins = Math.floor(5 + rng() * 8);
-        const numPotions = rng() > 0.6 ? 1 : 0;
+        const numPotions = Math.floor(3 + rng() * 2); // 3 à 4 potions par niveau
 
         for (let i = 0; i < numCoins; i++) {
             const cx = Math.floor(3 + rng() * (w - 6));
@@ -339,14 +339,27 @@ const LevelManager = {
             }
         }
 
-        if (numPotions > 0) {
-            const px = Math.floor(w / 3 + rng() * (w / 3));
-            items.push({
-                type: 'potion',
-                x: px * this.TILE_SIZE,
-                y: (h - 4) * this.TILE_SIZE,
-                collected: false,
-            });
+        for (let i = 0; i < numPotions; i++) {
+            const px = Math.floor(2 + rng() * (w - 4));
+            
+            // Chercher une surface valide pour poser la potion
+            let py = -1;
+            for (let y = h - 2; y >= 2; y--) {
+                if (grid[y][px] === this.TILE.EMPTY && 
+                   (grid[y+1][px] === this.TILE.GROUND || grid[y+1][px] === this.TILE.PLATFORM)) {
+                    py = y - 1; 
+                    break;
+                }
+            }
+
+            if (py !== -1) {
+                items.push({
+                    type: 'potion',
+                    x: px * this.TILE_SIZE + 4,
+                    y: py * this.TILE_SIZE,
+                    collected: false,
+                });
+            }
         }
 
         return items;

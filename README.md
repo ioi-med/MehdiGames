@@ -35,5 +35,3 @@ Rien à compiler, rien à héberger sur un serveur complexe.
 1. Ouvrez le dossier du projet.
 2. Double-cliquez sur `index.html`.
 3. Le jeu se lance instantanément dans votre navigateur par défaut.
-
-Idéal pour un hébergement statique sur **GitHub Pages**, Vercel ou Netlify.

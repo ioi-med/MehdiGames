@@ -248,6 +248,7 @@ const Game = {
 
         // Vider les particules
         this.particles = [];
+        this.bossPotionTimer = 0; // Timer pour le spawn de potions pendant les boss
         
         // Caméra initiale
         this.updateCamera(0, true);
@@ -391,6 +392,26 @@ const Game = {
 
         // --- Entités (Ennemis/Boss) ---
         let bossAlive = false;
+
+        // Spawn de potions toutes les 3 secondes pendant les boss
+        if (this.levelData.isBoss) {
+            this.bossPotionTimer += dt;
+            if (this.bossPotionTimer >= 3.0) {
+                this.bossPotionTimer = 0;
+                // Potion à une position aléatoire dans l'arène
+                const arenaW = this.levelData.width;
+                const arenaH = this.levelData.height;
+                const px = (2 + Math.floor(Math.random() * (arenaW - 4))) * LevelManager.TILE_SIZE;
+                const py = (arenaH - 4) * LevelManager.TILE_SIZE;
+                this.levelData.collectibles.push({
+                    type: 'potion',
+                    x: px,
+                    y: py,
+                    collected: false,
+                });
+                this.spawnEffect(px, py, 'sparkle', 3);
+            }
+        }
         
         for (let i = this.levelData.entities.length - 1; i >= 0; i--) {
             const ent = this.levelData.entities[i];

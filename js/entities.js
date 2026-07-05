@@ -653,10 +653,10 @@ class Boss {
         this.sprW = 32;
         this.sprH = 32;
 
-        this.maxHP = data.hp || 20;
+        this.maxHP = data.hp || 15;
         this.hp = this.maxHP;
-        this.damage = 2;
-        this.speed = 30 + this.id * 3;
+        this.damage = 1;
+        this.speed = 20 + this.id * 2;
 
         // IA
         this.phase = 0; // Phase du boss
@@ -791,8 +791,8 @@ class Boss {
             this.vx = 0;
         }
 
-        // Attaque périodique
-        const attackInterval = Math.max(1.5 - this.phase * 0.4, 0.5);
+        // Attaque périodique (plus lente)
+        const attackInterval = Math.max(2.5 - this.phase * 0.3, 1.2);
         if (this.attackTimer >= attackInterval) {
             this.attackTimer = 0;
             this.attackPattern = (this.attackPattern + 1) % 3;
@@ -804,7 +804,7 @@ class Boss {
                 this.projectiles.push({
                     x: this.x + (this.direction > 0 ? this.w : -8),
                     y: this.y + this.h / 2 - 4,
-                    vx: this.direction * (80 + this.phase * 30),
+                    vx: this.direction * (50 + this.phase * 15),
                     vy: 0,
                     timer: 0,
                     w: 8, h: 8,
@@ -817,8 +817,8 @@ class Boss {
                     this.projectiles.push({
                         x: this.x + this.w / 2 - 4,
                         y: this.y + this.h / 2 - 4,
-                        vx: this.direction * 60,
-                        vy: angle * 50,
+                        vx: this.direction * 40,
+                        vy: angle * 30,
                         timer: 0,
                         w: 8, h: 8,
                     });
