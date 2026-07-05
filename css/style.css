@@ -1,0 +1,155 @@
+/* ==========================================================================
+   MehdiGames — Feuille de styles principale
+   Rendu Pixel Art authentique avec image-rendering: pixelated
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #0a0a12;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Press Start 2P', monospace;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* Canvas principal — rendu pixelisé obligatoire */
+canvas#gameCanvas {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    -ms-interpolation-mode: nearest-neighbor;
+    display: block;
+    cursor: none;
+    background: #0a0a12;
+}
+
+/* Écran de chargement */
+#loadingScreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #0a0a12;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #e8c060;
+    font-family: 'Press Start 2P', monospace;
+    z-index: 100;
+    transition: opacity 0.5s ease;
+}
+
+#loadingScreen h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #f0c040;
+    text-shadow: 0 0 10px rgba(240, 192, 64, 0.5);
+}
+
+#loadingScreen p {
+    font-size: 10px;
+    color: #8080a0;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+/* Masquer le curseur uniquement sur le canvas */
+canvas#gameCanvas {
+    cursor: none;
+}
+
+/* Contrôles tactiles pour mobile */
+.touch-controls {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 20px;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.touch-controls .dpad, .touch-controls .actions {
+    display: flex;
+    gap: 15px;
+    pointer-events: auto;
+}
+
+.touch-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(40, 40, 60, 0.6);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    font-size: 24px;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none; /* Empêche le zoom/scroll du navigateur */
+}
+
+.touch-btn:active, .touch-btn.active {
+    background: rgba(240, 190, 60, 0.8);
+    transform: scale(0.95);
+}
+
+@media (min-width: 800px) {
+    /* Masquer les contrôles sur les écrans d'ordinateur */
+    .touch-controls {
+        display: none !important;
+    }
+}
+
+/* Menu de Sauvegarde JSON et TP */
+.save-load-menu {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 200;
+    pointer-events: auto;
+    cursor: auto !important;
+}
+
+.save-btn {
+    background: rgba(20, 20, 30, 0.8);
+    border: 2px solid #606080;
+    color: #a0a0c0;
+    font-family: inherit;
+    font-size: 10px;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: all 0.2s;
+}
+
+.save-btn:hover {
+    border-color: #f0c040;
+    color: #f0c040;
+    background: rgba(40, 40, 60, 0.9);
+}

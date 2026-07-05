@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MehdiGames - Action Platformer 2D</title>
+    
+    <!-- Meta tags pour SEO -->
+    <meta name="description" content="Jouez à MehdiGames, un jeu d'action et plateforme 2D rétro en pixel art pur avec 100 niveaux et 10 boss. Jouable gratuitement dans votre navigateur. Créé par MehdiLabs.">
+    <meta name="keywords" content="jeu, pixel art, 2d, plateforme, action, html5, canvas, javascript, rétro, MehdiLabs">
+    
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Écran de chargement initial (avant JS) -->
+    <div id="loadingScreen">
+        <h1>MEHDIGAMES</h1>
+        <p>Génération de l'univers 8-bit en cours...</p>
+    </div>
+
+    <!-- Menu Sauvegarde / Chargement JSON (affiché via JS dans l'écran titre) -->
+    <div id="saveLoadMenu" class="save-load-menu" style="display: none;">
+        <button id="btnExport" class="save-btn">💾 Exporter Sauvegarde</button>
+        <button id="btnImport" class="save-btn">📂 Charger Sauvegarde</button>
+        <input type="file" id="fileInput" accept=".json" style="display: none;">
+    </div>
+
+    <!-- Le jeu -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Contrôles tactiles (masqués par défaut, gérés via JS/CSS) -->
+    <div id="touchControls" class="touch-controls" style="display: none;">
+        <div class="dpad">
+            <button id="btnLeft" class="touch-btn">◄</button>
+            <button id="btnRight" class="touch-btn">►</button>
+        </div>
+        <div class="actions">
+            <button id="btnAttack" class="touch-btn">⚔</button>
+            <button id="btnJump" class="touch-btn">▲</button>
+        </div>
+    </div>
+
+    <!-- Scripts (ordre critique sans dépendances) -->
+    <script src="js/input.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/sprites.js"></script>
+    <script src="js/levels.js"></script>
+    <script src="js/entities.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/game.js"></script>
+
+</body>
+</html>
