@@ -635,6 +635,7 @@ const Game = {
                 const isPlaying = (this.state === UIManager.STATE.PLAYING);
                 const isMenu = (this.state === UIManager.STATE.MENU ||
                     this.state === UIManager.STATE.NAME_INPUT ||
+                    this.state === UIManager.STATE.STORY ||
                     this.state === UIManager.STATE.MODE_SELECT ||
                     this.state === UIManager.STATE.GAME_OVER ||
                     this.state === UIManager.STATE.PAUSED ||
