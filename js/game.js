@@ -283,6 +283,9 @@ const Game = {
         if (this.levelData.bossData) {
             this.levelData.entities.push(new Boss(this.levelData.bossData));
         }
+        if (this.levelData.shopData) {
+            this.levelData.entities.push(new ShopNPC(this.levelData.shopData));
+        }
 
         // Vider les particules
         this.particles = [];
@@ -349,9 +352,15 @@ const Game = {
                 break;
 
             case UIManager.STATE.MODE_SELECT:
-                if (InputManager.up || InputManager.down) {
+                if (InputManager.up) {
                     if (this.canChangeMode) {
-                        UIManager.menuSelection = (UIManager.menuSelection === 0) ? 1 : 0;
+                        UIManager.menuSelection = (UIManager.menuSelection - 1 + 3) % 3;
+                        AudioManager.sfxMenuSelect();
+                        this.canChangeMode = false;
+                    }
+                } else if (InputManager.down) {
+                    if (this.canChangeMode) {
+                        UIManager.menuSelection = (UIManager.menuSelection + 1) % 3;
                         AudioManager.sfxMenuSelect();
                         this.canChangeMode = false;
                     }
@@ -361,10 +370,52 @@ const Game = {
 
                 if (InputManager.confirm) {
                     AudioManager.sfxMenuSelect();
-                    this.creativeMode = (UIManager.menuSelection === 1);
-                    UIManager.startTransition(() => {
-                        this.startNewGame();
-                    });
+                    if (UIManager.menuSelection === 2) {
+                        UIManager.startTransition(() => {
+                            this.state = UIManager.STATE.SETTINGS;
+                            UIManager.menuSelection = 0;
+                            this.canChangeMode = false;
+                        });
+                    } else {
+                        this.creativeMode = (UIManager.menuSelection === 1);
+                        UIManager.startTransition(() => {
+                            this.startNewGame();
+                        });
+                    }
+                }
+                break;
+
+            case UIManager.STATE.SETTINGS:
+                if (InputManager.waitingForKey) return; // On attend une touche
+
+                if (InputManager.up) {
+                    if (this.canChangeMode) {
+                        UIManager.menuSelection = (UIManager.menuSelection - 1 + 8) % 8;
+                        AudioManager.sfxMenuSelect();
+                        this.canChangeMode = false;
+                    }
+                } else if (InputManager.down) {
+                    if (this.canChangeMode) {
+                        UIManager.menuSelection = (UIManager.menuSelection + 1) % 8;
+                        AudioManager.sfxMenuSelect();
+                        this.canChangeMode = false;
+                    }
+                } else {
+                    this.canChangeMode = true;
+                }
+
+                if (InputManager.confirm) {
+                    AudioManager.sfxMenuSelect();
+                    if (UIManager.menuSelection === 7) { // RETOUR
+                        UIManager.startTransition(() => {
+                            this.state = UIManager.STATE.MODE_SELECT;
+                            UIManager.menuSelection = 2;
+                            this.canChangeMode = false;
+                        });
+                    } else {
+                        const binds = ['left', 'right', 'up', 'down', 'jump', 'attack', 'pause'];
+                        InputManager.waitingForKey = binds[UIManager.menuSelection];
+                    }
                 }
                 break;
 
@@ -419,7 +470,14 @@ const Game = {
 
             case UIManager.STATE.GAME_CLEAR:
                 // Attente sur l'écran de victoire
-                if (InputManager.confirm) {
+                if (InputManager.isJustPressed('KeyD') || (InputManager.isMobile && InputManager.attack)) {
+                    const link = document.createElement('a');
+                    link.download = 'victoire_mehdigames.png';
+                    link.href = this.canvas.toDataURL('image/png');
+                    link.click();
+                }
+
+                if (InputManager.confirm && !InputManager.attack) {
                     UIManager.startTransition(() => {
                         this.state = UIManager.STATE.MENU;
                     });
@@ -706,6 +764,9 @@ const Game = {
                 break;
             case UIManager.STATE.MODE_SELECT:
                 UIManager.renderModeSelect(this.ctx, this.canvas.width, this.canvas.height);
+                break;
+            case UIManager.STATE.SETTINGS:
+                UIManager.renderSettings(this.ctx, this.canvas.width, this.canvas.height);
                 break;
             case UIManager.STATE.PLAYING:
                 // HUD déjà rendu ci-dessus

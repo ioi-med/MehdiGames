@@ -640,6 +640,88 @@ class Enemy {
 }
 
 // =====================================================================
+//  CLASSE PNJ SHOP
+// =====================================================================
+
+class ShopNPC {
+    constructor(data) {
+        this.x = data.x;
+        this.y = data.y;
+        this.w = 16;
+        this.h = 24;
+        this.isDead = false;
+        this.hitTimer = 0;
+        this.message = "ACHETER EPEE (20 PIECES)";
+        this.promptOffset = 0;
+        this.hasPurchased = false;
+        
+        // Sprite placeholder
+        this.spriteInfo = SpriteManager.enemies && SpriteManager.enemies['mage'] ? SpriteManager.enemies['mage'] : null;
+    }
+
+    update(dt, levelData, player) {
+        if (!player) return true;
+
+        const px = player.x + player.w/2;
+        const py = player.y + player.h/2;
+        const nx = this.x + this.w/2;
+        const ny = this.y + this.h/2;
+        
+        const dist = Math.hypot(px - nx, py - ny);
+        this.promptOffset += dt * 4;
+
+        if (dist < 50 && !this.hasPurchased) {
+            if (InputManager.attack || InputManager.confirm) {
+                if (player.coins >= 20) {
+                    player.coins -= 20;
+                    player.attackDamage += 1;
+                    this.hasPurchased = true;
+                    this.message = "MERCI ! (+1 DEGATS)";
+                    if (AudioManager.sfxCoin) AudioManager.sfxCoin();
+                    player.attackCooldown = 0.5;
+                } else {
+                    this.message = "PAS ASSEZ DE PIECES...";
+                }
+            }
+        }
+        return true;
+    }
+
+    render(ctx, cameraX, cameraY) {
+        const px = Math.floor(this.x - cameraX);
+        const py = Math.floor(this.y - cameraY);
+
+        if (this.spriteInfo && this.spriteInfo.idle) {
+            const spr = this.spriteInfo.idle[0];
+            if (spr) {
+                ctx.drawImage(spr, px - (this.spriteInfo.w - this.w) / 2, py - (this.spriteInfo.h - this.h));
+            }
+        } else {
+            ctx.fillStyle = '#00ff00';
+            ctx.fillRect(px, py, this.w, this.h);
+        }
+
+        if (typeof Game !== 'undefined' && Game.player) {
+            const player = Game.player;
+            const dist = Math.hypot((player.x + player.w/2) - (this.x + this.w/2), (player.y + player.h/2) - (this.y + this.h/2));
+            if (dist < 60) {
+                const bounce = Math.sin(this.promptOffset) * 2;
+                UIManager.drawText(ctx, this.message, px + this.w / 2, py - 15 + bounce, 6, '#f0c040', 'center');
+            }
+        }
+    }
+
+    takeDamage(amount, knockbackDir) {
+        return false;
+    }
+
+    collidesWith(box) {
+        return false;
+    }
+}
+
+
+// =====================================================================
 //  CLASSE BOSS
 // =====================================================================
 

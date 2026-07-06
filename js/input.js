@@ -11,6 +11,19 @@ const InputManager = {
     // Touches relâchées cette frame
     justReleased: {},
 
+    // Custom bindings
+    bindings: {
+        left: 'ArrowLeft',
+        right: 'ArrowRight',
+        up: 'ArrowUp',
+        down: 'ArrowDown',
+        attack: 'Space',
+        jump: 'ArrowUp',
+        pause: 'Escape',
+        confirm: 'Enter'
+    },
+    waitingForKey: null,
+
     // Variables pour la manette (Gamepad API)
     gpKeys: {},
     gpJustPressed: {},
@@ -23,11 +36,27 @@ const InputManager = {
      * Initialiser les écouteurs clavier
      */
     init() {
+        // Charger les bindings sauvegardés
+        const savedBindings = localStorage.getItem('mehdigames_bindings');
+        if (savedBindings) {
+            try {
+                this.bindings = JSON.parse(savedBindings);
+            } catch (e) {}
+        }
+
         // Détecter si on est sur mobile/tablette
         this.isMobile = ('ontouchstart' in window || navigator.maxTouchPoints > 0)
             && (window.innerWidth < 900 || /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
 
         window.addEventListener('keydown', (e) => {
+            if (this.waitingForKey) {
+                e.preventDefault();
+                this.bindings[this.waitingForKey] = e.code;
+                localStorage.setItem('mehdigames_bindings', JSON.stringify(this.bindings));
+                this.waitingForKey = null;
+                return;
+            }
+
             // Marquer comme "just pressed" seulement au premier appui
             if (!this.keys[e.code]) {
                 this.justPressed[e.code] = true;
@@ -197,30 +226,30 @@ const InputManager = {
 
     // === Raccourcis directionnels (fléchées + ZQSD + WASD + Manette) ===
     get left() {
-        return this.isDown('ArrowLeft') || this.isDown('KeyQ') || this.isDown('KeyA') || this.gpKeys['Left'];
+        return this.isDown(this.bindings.left) || this.isDown('ArrowLeft') || this.isDown('KeyQ') || this.isDown('KeyA') || this.gpKeys['Left'];
     },
     get right() {
-        return this.isDown('ArrowRight') || this.isDown('KeyD') || this.gpKeys['Right'];
+        return this.isDown(this.bindings.right) || this.isDown('ArrowRight') || this.isDown('KeyD') || this.gpKeys['Right'];
     },
     get up() {
-        return this.isDown('ArrowUp') || this.isDown('KeyZ') || this.isDown('KeyW') || this.gpKeys['Up'];
+        return this.isDown(this.bindings.up) || this.isDown('ArrowUp') || this.isDown('KeyZ') || this.isDown('KeyW') || this.gpKeys['Up'];
     },
     get down() {
-        return this.isDown('ArrowDown') || this.isDown('KeyS') || this.gpKeys['Down'];
+        return this.isDown(this.bindings.down) || this.isDown('ArrowDown') || this.isDown('KeyS') || this.gpKeys['Down'];
     },
 
     // === Raccourcis d'action ===
     get attack() {
-        return this.isJustPressed('Space') || this.isJustPressed('KeyX') || this.gpJustPressed['Attack'];
+        return this.isJustPressed(this.bindings.attack) || this.isJustPressed('Space') || this.isJustPressed('KeyX') || this.gpJustPressed['Attack'];
     },
     get jump() {
-        return this.isJustPressed('ArrowUp') || this.isJustPressed('KeyZ') || this.isJustPressed('KeyW') || this.gpJustPressed['Jump'];
+        return this.isJustPressed(this.bindings.jump) || this.isJustPressed('ArrowUp') || this.isJustPressed('KeyZ') || this.isJustPressed('KeyW') || this.gpJustPressed['Jump'];
     },
     get pause() {
-        return this.isJustPressed('Escape') || this.isJustPressed('KeyP') || this.gpJustPressed['Pause'];
+        return this.isJustPressed(this.bindings.pause) || this.isJustPressed('Escape') || this.isJustPressed('KeyP') || this.gpJustPressed['Pause'];
     },
     get confirm() {
-        return this.isJustPressed('Enter') || this.isJustPressed('Space') || this.gpJustPressed['Jump'];
+        return this.isJustPressed(this.bindings.confirm) || this.isJustPressed('Enter') || this.isJustPressed('Space') || this.gpJustPressed['Jump'];
     },
 
     /**

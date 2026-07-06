@@ -4,7 +4,6 @@
    ========================================================================== */
 
 const UIManager = {
-    // États possibles du jeu
     STATE: {
         LOADING: 0,
         MENU: 1,
@@ -15,7 +14,8 @@ const UIManager = {
         LEVEL_CLEAR: 6,
         GAME_CLEAR: 7,
         MODE_SELECT: 8,
-        STORY: 9
+        STORY: 9,
+        SETTINGS: 10
     },
 
     // Variables UI
@@ -208,12 +208,58 @@ const UIManager = {
         const colorCreatif = (this.menuSelection === 1) ? '#ffffff' : '#606080';
         this.drawText(ctx, (this.menuSelection === 1 ? "> " : "") + "2. CREATIF (Invincible)", cw / 2, ch / 2 + 20, 10, colorCreatif);
 
+        // Réglages
+        const colorSettings = (this.menuSelection === 2) ? '#ffffff' : '#606080';
+        this.drawText(ctx, (this.menuSelection === 2 ? "> " : "") + "3. REGLAGES (Touches)", cw / 2, ch / 2 + 40, 10, colorSettings);
+
         if (InputManager.isMobile) {
-            this.drawText(ctx, "Touchez l'écran pour changer", cw / 2, ch / 2 + 50, 8, '#404060');
-            this.drawText(ctx, "OK pour valider", cw / 2, ch / 2 + 65, 8, '#606080');
+            this.drawText(ctx, "Touchez l'écran pour changer", cw / 2, ch / 2 + 65, 8, '#404060');
+            this.drawText(ctx, "OK pour valider", cw / 2, ch / 2 + 80, 8, '#606080');
         } else {
-            this.drawText(ctx, "Haut/Bas pour choisir", cw / 2, ch / 2 + 50, 8, '#404060');
-            this.drawText(ctx, "Entrée pour valider", cw / 2, ch / 2 + 65, 8, '#606080');
+            this.drawText(ctx, "Haut/Bas pour choisir", cw / 2, ch / 2 + 65, 8, '#404060');
+            this.drawText(ctx, "Entrée pour valider", cw / 2, ch / 2 + 80, 8, '#606080');
+        }
+    },
+
+    /**
+     * Rendu de l'écran des réglages
+     */
+    renderSettings(ctx, cw, ch) {
+        ctx.fillStyle = '#0a0a12';
+        ctx.fillRect(0, 0, cw, ch);
+
+        this.drawText(ctx, "REGLAGES TOUCHES", cw / 2, 30, 16, '#f0c040');
+
+        const bindings = [
+            { id: 'left', label: 'Gauche' },
+            { id: 'right', label: 'Droite' },
+            { id: 'up', label: 'Haut / Echelle' },
+            { id: 'down', label: 'Bas / Echelle' },
+            { id: 'jump', label: 'Sauter' },
+            { id: 'attack', label: 'Attaquer' },
+            { id: 'pause', label: 'Pause' }
+        ];
+
+        for (let i = 0; i < bindings.length; i++) {
+            let y = 60 + i * 20;
+            let color = (this.menuSelection === i) ? '#ffffff' : '#606080';
+            
+            let val = InputManager.bindings[bindings[i].id];
+            if (InputManager.waitingForKey === bindings[i].id) {
+                val = "???";
+                color = '#ff0000'; // En attente
+            }
+
+            this.drawText(ctx, (this.menuSelection === i ? "> " : "") + bindings[i].label + ": " + val, cw / 2, y, 10, color);
+        }
+
+        const colorRetour = (this.menuSelection === bindings.length) ? '#ffffff' : '#606080';
+        this.drawText(ctx, (this.menuSelection === bindings.length ? "> " : "") + "RETOUR", cw / 2, 60 + bindings.length * 20 + 20, 10, colorRetour);
+
+        if (InputManager.waitingForKey) {
+            this.drawText(ctx, "Appuyez sur une touche...", cw / 2, ch - 20, 8, '#ff5555');
+        } else {
+            this.drawText(ctx, "Entree/Clic pour modifier", cw / 2, ch - 20, 8, '#404060');
         }
     },
 
@@ -307,7 +353,16 @@ const UIManager = {
         this.drawText(ctx, `${player.name} a sauvé Stalum !`, cw / 2, ch / 2 - 10, 10, '#ffffff');
         this.drawText(ctx, `Score final : ${player.score}`, cw / 2, ch / 2 + 10, 10, '#f0c040');
 
-        this.drawText(ctx, "Merci d'avoir joué", cw / 2, ch / 2 + 40, 10, '#a0a0c0');
+        this.drawText(ctx, "Merci d'avoir joué", cw / 2, ch / 2 + 35, 10, '#a0a0c0');
+
+        if (this.cursorVisible) {
+            const downText = InputManager.isMobile ? "Bouton ATTACK pour télécharger l'image" : "Touche D pour télécharger l'image";
+            this.drawText(ctx, downText, cw / 2, ch / 2 + 55, 8, '#ffffff');
+            
+            const menuText = InputManager.isMobile ? "Bouton JUMP pour le menu" : "Touche ENTRÉE pour le menu";
+            this.drawText(ctx, menuText, cw / 2, ch / 2 + 70, 8, '#a0a0a0');
+        }
+
         this.drawText(ctx, "Créé par MehdiLabs", cw / 2, ch - 20, 8, '#606080');
     },
 

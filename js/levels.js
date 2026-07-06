@@ -40,13 +40,17 @@ const LevelManager = {
      */
     generate(levelNum) {
         const rng = this.seededRandom(levelNum * 7919 + 1013);
-        const isBoss = (levelNum % 10 === 0);
+        const isTown = (levelNum === 50);
+        const isBoss = (levelNum % 10 === 0) && !isTown;
         const biome = SpriteManager.getBiome(levelNum);
         const difficulty = Math.min(levelNum / 100, 1); // 0 à 1
 
         // Dimensions du niveau
         let width, height;
-        if (isBoss) {
+        if (isTown) {
+            width = 30; // Village compact
+            height = this.LEVEL_HEIGHT;
+        } else if (isBoss) {
             width = 25; // Arène de boss compacte
             height = this.LEVEL_HEIGHT;
         } else {
@@ -61,14 +65,16 @@ const LevelManager = {
             grid[y] = new Array(width).fill(this.TILE.EMPTY);
         }
 
-        if (isBoss) {
+        if (isTown) {
+            this.generateTownLevel(grid, width, height, rng, biome);
+        } else if (isBoss) {
             this.generateBossArena(grid, width, height, rng, biome);
         } else {
             this.generatePlatformLevel(grid, width, height, rng, difficulty, biome);
         }
 
         // Placer les ennemis
-        const enemies = isBoss ? [] : this.placeEnemies(grid, width, height, rng, levelNum, difficulty);
+        const enemies = (isBoss || isTown) ? [] : this.placeEnemies(grid, width, height, rng, levelNum, difficulty);
 
         // Données du boss si applicable
         const bossData = isBoss ? {
@@ -76,6 +82,12 @@ const LevelManager = {
             x: (width / 2) * this.TILE_SIZE,
             y: (height - 6) * this.TILE_SIZE,
             hp: 5 + levelNum,
+        } : null;
+
+        // Données du shop si village
+        const shopData = isTown ? {
+            x: (width / 2) * this.TILE_SIZE,
+            y: (height - 4) * this.TILE_SIZE
         } : null;
 
         // Placer les collectibles
@@ -103,6 +115,7 @@ const LevelManager = {
             grid,
             enemies,
             bossData,
+            shopData,
             collectibles,
             playerStart,
             doorPos,
@@ -245,7 +258,6 @@ const LevelManager = {
         grid[h - 6][w - 4] = T.PLATFORM;
 
         // Plateforme centrale haute
-        grid[h - 9][Math.floor(w / 2) - 2] = T.PLATFORM;
         grid[h - 9][Math.floor(w / 2) - 1] = T.PLATFORM;
         grid[h - 9][Math.floor(w / 2)] = T.PLATFORM;
         grid[h - 9][Math.floor(w / 2) + 1] = T.PLATFORM;
@@ -253,6 +265,32 @@ const LevelManager = {
         // Torches d'ambiance
         grid[3][2] = T.TORCH;
         grid[3][w - 3] = T.TORCH;
+    },
+
+    /**
+     * Générer le village (Niveau 50)
+     */
+    generateTownLevel(grid, w, h, rng, biome) {
+        const T = this.TILE;
+
+        // Sol plat
+        for (let x = 0; x < w; x++) {
+            grid[h - 2][x] = T.GROUND;
+            grid[h - 1][x] = T.DIRT;
+        }
+
+        // Murs
+        for (let y = 0; y < h; y++) {
+            grid[y][0] = T.WALL;
+            grid[y][w - 1] = T.WALL;
+        }
+
+        // Torches
+        grid[h - 4][5] = T.TORCH;
+        grid[h - 4][w - 6] = T.TORCH;
+
+        // Porte
+        grid[h - 3][w - 3] = T.DOOR;
         grid[h - 5][1] = T.TORCH;
         grid[h - 5][w - 2] = T.TORCH;
     },
